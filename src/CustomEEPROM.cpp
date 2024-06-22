@@ -238,6 +238,7 @@ unsigned long CustomEEPROM::getPosition()
 {
     return _state.position;
 }
+
 void CustomEEPROM::setPosition(unsigned long value)
 {
     if (value > _state.maxPosition)
@@ -252,6 +253,7 @@ void CustomEEPROM::setPosition(unsigned long value)
     _lastPositionChangeMs = millis();
     _state.position = value;
 }
+
 void CustomEEPROM::syncPosition(unsigned long value)
 {
     if (value > _state.maxPosition)
@@ -267,10 +269,12 @@ void CustomEEPROM::syncPosition(unsigned long value)
     _state.targetPosition = value;
     _state.position = value;
 }
+
 unsigned long CustomEEPROM::getTargetPosition()
 {
     return _state.targetPosition;
 }
+
 bool CustomEEPROM::setTargetPosition(unsigned long value)
 {
     unsigned long diff = (_state.position > value) ? _state.position - value : value - _state.position;
@@ -288,10 +292,12 @@ bool CustomEEPROM::setTargetPosition(unsigned long value)
     _state.targetPosition = value;
     return true;
 }
+
 unsigned long CustomEEPROM::getMaxPosition()
 {
     return _state.maxPosition;
 }
+
 void CustomEEPROM::setMaxPosition(unsigned long value)
 {
     if (value < 1)
@@ -306,10 +312,12 @@ void CustomEEPROM::setMaxPosition(unsigned long value)
     _isConfigDirty = true;
     _state.maxPosition = value;
 }
+
 unsigned long CustomEEPROM::getMaxMovement()
 {
     return _state.maxMovement;
 }
+
 void CustomEEPROM::setMaxMovement(unsigned long value)
 {
     if (value < 1)
@@ -323,6 +331,7 @@ unsigned short CustomEEPROM::getStepMode()
 {
     return (unsigned short)_state.stepMode;
 }
+
 bool CustomEEPROM::setStepMode(unsigned short value)
 {
     if (value != 1 && value != 2 && value != 4 && value != 8 && value != 16 && value != 32 && value != 64 && value != 128 && value != 256)
@@ -334,10 +343,12 @@ bool CustomEEPROM::setStepMode(unsigned short value)
     _state.stepMode = value;
     return true;
 }
+
 unsigned short CustomEEPROM::getStepModeManual()
 {
     return (unsigned short)_state.stepModeManual;
 }
+
 bool CustomEEPROM::setStepModeManual(unsigned short value)
 {
     if (value != 1 && value != 2 && value != 4 && value != 8 && value != 16 && value != 32 && value != 64 && value != 128 && value != 256)
@@ -349,10 +360,12 @@ bool CustomEEPROM::setStepModeManual(unsigned short value)
     _state.stepModeManual = value;
     return true;
 }
+
 unsigned char CustomEEPROM::getSpeedMode()
 {
     return (unsigned char)_state.speedMode;
 }
+
 bool CustomEEPROM::setSpeedMode(unsigned char value)
 {
     if (value != 1 && value != 2 && value != 3 && value != 4 && value != 5)
@@ -364,37 +377,45 @@ bool CustomEEPROM::setSpeedMode(unsigned char value)
     _state.speedMode = value;
     return true;
 }
+
 unsigned long CustomEEPROM::getSettleBufferMs()
 {
     return _state.settleBufferMs;
 }
+
 void CustomEEPROM::setSettleBufferMs(unsigned long value)
 {
     _isConfigDirty = true;
     _state.settleBufferMs = value;
 }
+
 bool CustomEEPROM::getReverseDirection()
 {
     return _state.reverseDirection;
 }
+
 void CustomEEPROM::setReverseDirection(bool value)
 {
     _isConfigDirty = true;
     _state.reverseDirection = value;
 }
+
 unsigned long CustomEEPROM::getIdleEepromWriteMs()
 {
     return _state.idleEepromWriteMs;
 }
+
 void CustomEEPROM::setIdleEepromWriteMs(unsigned long value)
 {
     _isConfigDirty = true;
     _state.idleEepromWriteMs = value;
 }
+
 unsigned char CustomEEPROM::getMotorIMoveMultiplier()
 {
     return _state.motorIMoveMultiplier;
 }
+
 void CustomEEPROM::setMotorIMoveMultiplier(unsigned char value)
 {
     if (value < 1)
@@ -409,10 +430,12 @@ void CustomEEPROM::setMotorIMoveMultiplier(unsigned char value)
     _isConfigDirty = true;
     _state.motorIMoveMultiplier = value;
 }
+
 unsigned char CustomEEPROM::getMotorIHoldMultiplier()
 {
     return _state.motorIHoldMultiplier;
 }
+
 void CustomEEPROM::setMotorIHoldMultiplier(unsigned char value)
 {
     if (value < 1)
