@@ -14,9 +14,6 @@ private:
     char _resultBuffer1[50];
     char _resultBuffer2[50];
     char *_uintToChar(unsigned int value);
-    float getStepsPerDeg();
-    float stepsToDeg(unsigned long steps);
-    unsigned long degToSteps(float deg);
     bool _commandEndsWith(char c, char commandParam[], int commandParamLength);
     char const *_formatResponse(float value);
     char const *_formatResponse(unsigned long value);
@@ -24,5 +21,8 @@ private:
 
 public:
     void init(CustomEEPROM &eeprom, Motor &motor);
+    float getStepsPerDeg();
+    float stepsToDeg(unsigned long steps);
+    unsigned long degToSteps(float deg);
     char const *processFalconCommand(char *command, char *commandParam, int commandParamLength);
 };
