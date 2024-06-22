@@ -27,7 +27,7 @@ private:
     unsigned long _debouncingLastRunMs = 0L;
     unsigned long _lastMoveFinishedMs = 0L;
     long _motorMoveDelay;
-    TMC2208Stepper _driver = TMC2208Stepper(TMC220X_PIN_UART_RX, TMC220X_PIN_UART_TX, 0.11, true);
+    TMC2208Stepper _driver = TMC2208Stepper(TMC220X_PIN_UART_RX, TMC220X_PIN_UART_TX, 0.11);
     void _startMotor();
     void _stopMotor();
     void _applyStepMode();
