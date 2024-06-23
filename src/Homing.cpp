@@ -19,14 +19,11 @@ void Homing::_handleMovement()
     {
         _motor->handleMotor();
     } while (_motor->isMoving());
-
-    _eeprom->handleEeprom();
 }
 
 void Homing::_moveOneDegree()
 {
     unsigned long steps = _stringProxy->getStepsPerDeg();
-
     _eeprom->setTargetPosition(_eeprom->getPosition() + steps);
     _motor->applyStepMode();
     _motor->startMotor();
@@ -35,20 +32,19 @@ void Homing::_moveOneDegree()
 void Homing::_moveToHome()
 {
     _eeprom->setTargetPosition(_homePosition);
+    _motor->applyStepMode();
     _motor->startMotor();
 
-    do
-    {
-        _motor->handleMotor();
-    } while (_motor->isMoving());
-
-    _eeprom->setPosition(0);
-    _eeprom->setTargetPosition(0);
-    _eeprom->handleEeprom();
+    this->_handleMovement();
 
     _homePosition = 0;
     _isHomed = true;
     _isHoming = false;
+
+    _eeprom->setHoming(false);
+    _eeprom->setPosition(0);
+    _eeprom->setTargetPosition(0);
+    _eeprom->handleEeprom();
 }
 
 bool Homing::init(CustomEEPROM &eeprom, Motor &motor, StringProxy &stringProxy)
@@ -57,7 +53,7 @@ bool Homing::init(CustomEEPROM &eeprom, Motor &motor, StringProxy &stringProxy)
     _motor = &motor;
     _stringProxy = &stringProxy;
 
-    ArrayList<int> _homeSensorList(ArrayList<int>::FIXED, 360);
+    ArrayList<int> _homeSensorList(ArrayList<int>::FIXED, 361);
 
     if (!_pinsInitialized)
     {
@@ -81,6 +77,7 @@ bool Homing::isHoming()
 void Homing::findHomePosition()
 {
     _isHoming = true;
+    _eeprom->setHoming(true);
     _eeprom->setPosition(0);
     _eeprom->handleEeprom();
 
@@ -89,30 +86,26 @@ void Homing::findHomePosition()
         if (i > 0)
         {
             this->_moveOneDegree();
-            do
-            {
-                _motor->handleMotor();
-            } while (_motor->isMoving());
-
-            _eeprom->handleEeprom();
+            this->_handleMovement();
         }
 
-        int hallReading = this->_getSensorReading();
-        this->_homeSensorList.insert(i, hallReading);
-    }
+        _currentSensorValue = this->_getSensorReading();
+        _currentPosition = _eeprom->getPosition();
+        _previousPosition = _currentPosition - _stringProxy->getStepsPerDeg();
 
-    int angleOfLowestValue = 1;
-    int lowestValue = 9999;
-    for (int i = 0; i <= 360; i++)
-    {
-        if (this->_homeSensorList.get(i) <= lowestValue)
+        if (_currentSensorValue <= _previousSensorValue)
         {
-            lowestValue = this->_homeSensorList.get(i);
-            angleOfLowestValue = i;
+            _previousSensorValue = _currentSensorValue;
+        }
+        else if (
+            _currentSensorValue < HOME_SENSOR_THRESHOLD &&
+            _currentSensorValue > _previousSensorValue)
+        {
+            break;
         }
     }
 
-    _homePosition = _stringProxy->degToSteps(angleOfLowestValue);
+    _homePosition = _previousPosition;
     this->_moveToHome();
 
     _readingHomeValuesFinished = true;
