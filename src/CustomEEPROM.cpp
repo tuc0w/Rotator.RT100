@@ -171,6 +171,7 @@ void CustomEEPROM::_resetEeprom()
 void CustomEEPROM::init()
 {
     _readEeprom();
+    _isHoming = false;
     _lastEepromCheckMs = millis();
 }
 
@@ -234,6 +235,16 @@ void CustomEEPROM::debug()
     Serial.println(_state.checksum);
 }
 
+bool CustomEEPROM::isHoming()
+{
+    return _isHoming;
+}
+
+void CustomEEPROM::setHoming(bool value)
+{
+    _isHoming = value;
+}
+
 unsigned long CustomEEPROM::getPosition()
 {
     return _state.position;
@@ -241,13 +252,16 @@ unsigned long CustomEEPROM::getPosition()
 
 void CustomEEPROM::setPosition(unsigned long value)
 {
-    if (value > _state.maxPosition)
+    if (!this->isHoming())
     {
-        value = _state.maxPosition;
-    }
-    else if (value < 0)
-    {
-        value = 0;
+        if (value > _state.maxPosition)
+        {
+            value = _state.maxPosition;
+        }
+        else if (value < 0)
+        {
+            value = 0;
+        }
     }
 
     _lastPositionChangeMs = millis();
@@ -256,13 +270,16 @@ void CustomEEPROM::setPosition(unsigned long value)
 
 void CustomEEPROM::syncPosition(unsigned long value)
 {
-    if (value > _state.maxPosition)
+    if (!this->isHoming())
     {
-        value = _state.maxPosition;
-    }
-    else if (value < 0)
-    {
-        value = 0;
+        if (value > _state.maxPosition)
+        {
+            value = _state.maxPosition;
+        }
+        else if (value < 0)
+        {
+            value = 0;
+        }
     }
 
     _isConfigDirty = true;
@@ -277,15 +294,18 @@ unsigned long CustomEEPROM::getTargetPosition()
 
 bool CustomEEPROM::setTargetPosition(unsigned long value)
 {
-    unsigned long diff = (_state.position > value) ? _state.position - value : value - _state.position;
-    if (diff > _state.maxMovement)
+    if (!this->isHoming())
     {
-        return false;
-    }
+        unsigned long diff = (_state.position > value) ? _state.position - value : value - _state.position;
+        if (diff > _state.maxMovement)
+        {
+            return false;
+        }
 
-    if (value > _state.maxPosition)
-    {
-        value = _state.maxPosition;
+        if (value > _state.maxPosition)
+        {
+            value = _state.maxPosition;
+        }
     }
 
     _lastPositionChangeMs = millis();

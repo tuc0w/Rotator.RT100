@@ -35,6 +35,7 @@ private:
   int _slidingAddressCount = EEPROM_SIZE / _slidingSize;
   int _slidingCurrentAddress = _configurationSize;
   bool _isConfigDirty;
+  bool _isHoming;
   unsigned long _lastEepromCheckMs;
   unsigned long _lastPositionChangeMs = 0L;
 
@@ -49,6 +50,8 @@ public:
   void resetToDefaults();
   void debug();
 
+  bool isHoming();
+  void setHoming(bool value);
   unsigned long getPosition();
   void setPosition(unsigned long value);
   void syncPosition(unsigned long value);
