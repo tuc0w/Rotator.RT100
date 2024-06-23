@@ -53,8 +53,6 @@ bool Homing::init(CustomEEPROM &eeprom, Motor &motor, StringProxy &stringProxy)
     _motor = &motor;
     _stringProxy = &stringProxy;
 
-    ArrayList<int> _homeSensorList(ArrayList<int>::FIXED, 361);
-
     if (!_pinsInitialized)
     {
         pinMode(HOME_SENSOR_PIN, INPUT);
