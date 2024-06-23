@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "CustomEEPROM.h"
+#include "Homing.h"
 #include "Motor.h"
 #include "StringProxy.h"
 #include "CustomSerial.h"
@@ -7,6 +8,7 @@
 #include "EEPROM.h"
 
 CustomEEPROM _eeprom;
+Homing _homing;
 Motor _motor;
 StringProxy _stringProxy;
 CustomSerial _serial;
@@ -30,6 +32,7 @@ void setup()
     _motor.init(_eeprom);
     _stringProxy.init(_eeprom, _motor);
     _serial.init(_stringProxy);
+    _homing.init(_eeprom, _motor, _stringProxy);
 }
 
 void loop()
@@ -47,6 +50,16 @@ void loop()
         {
             digitalWrite(LED_BUILTIN, LOW);
         }
+    }
+
+    if (!_homing.isHomed())
+    {
+        if (_homing.isHoming())
+        {
+            return;
+        }
+
+        _homing.findHomePosition();
     }
 
     _motor.handleMotor();
