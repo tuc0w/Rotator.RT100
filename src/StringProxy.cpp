@@ -40,19 +40,7 @@ float StringProxy::getStepsPerDeg()
 float StringProxy::stepsToDeg(unsigned long steps)
 {
     float stepsPerDeg = this->getStepsPerDeg();
-
     float deg = steps / stepsPerDeg;
-
-    deg -= 90.0f; // shift by 90deg
-
-    while (deg < 0.0f)
-    {
-        deg += 360.0f;
-    }
-    while (deg >= 360.0f)
-    {
-        deg -= 360.0f;
-    }
 
     return deg;
 }
@@ -60,18 +48,6 @@ float StringProxy::stepsToDeg(unsigned long steps)
 unsigned long StringProxy::degToSteps(float deg)
 {
     float stepsPerDeg = this->getStepsPerDeg();
-
-    deg += 90.0f; // shift by 90deg
-
-    while (deg < 0.0f)
-    {
-        deg += 360.0f;
-    }
-    while (deg >= 360.0f)
-    {
-        deg -= 360.0f;
-    }
-
     unsigned long steps = deg * stepsPerDeg;
 
     return steps;
