@@ -15,9 +15,6 @@ private:
     char _resultBuffer2[50];
     char *_uintToChar(unsigned int value);
     bool _commandEndsWith(char c, char commandParam[], int commandParamLength);
-    char const *_formatResponse(float value);
-    char const *_formatResponse(unsigned long value);
-    char const *_formatResponse(unsigned short value);
 
 public:
     void init(CustomEEPROM &eeprom, Motor &motor);

@@ -1,27 +1,5 @@
 #include "StringProxy.h"
 
-char const *StringProxy::_formatResponse(float value)
-{
-    dtostrf(value, 1, 2, _resultBuffer1);
-    sprintf(_resultBuffer2, "(%s)", _resultBuffer1);
-
-    return _resultBuffer2;
-}
-
-char const *StringProxy::_formatResponse(unsigned long value)
-{
-    sprintf(_resultBuffer1, "(%lu)", value);
-
-    return _resultBuffer1;
-}
-
-char const *StringProxy::_formatResponse(unsigned short value)
-{
-    sprintf(_resultBuffer1, "(%hu)", value);
-
-    return _resultBuffer1;
-}
-
 void StringProxy::init(CustomEEPROM &eeprom, Motor &motor)
 {
     _eeprom = &eeprom;
