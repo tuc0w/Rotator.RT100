@@ -44,14 +44,14 @@ void Motor::_applyStepMode()
 {
     unsigned short sm = _eeprom->getStepMode();
     // select microsteps (0,2,4,8,16,32,64,128,256)
-    _driver.microsteps(sm == 1 ? 0 : sm);
+    _tmcDriver.microsteps(sm == 1 ? 0 : sm);
 }
 
 void Motor::_applyStepModeManual()
 {
     unsigned short sm = _eeprom->getStepModeManual();
     // select microsteps (0,2,4,8,16,32,64,128,256)
-    _driver.microsteps(sm == 1 ? 0 : sm);
+    _tmcDriver.microsteps(sm == 1 ? 0 : sm);
 }
 
 void Motor::_applyMotorCurrent()
@@ -61,7 +61,7 @@ void Motor::_applyMotorCurrent()
     int mA = _motorI * (((float)_eeprom->getMotorIMoveMultiplier()) / 100.0);
     float multiplier = ((float)_eeprom->getMotorIHoldMultiplier()) / 100.0;
 
-    _driver.rms_current(mA, multiplier * 0.8);
+    _tmcDriver.rms_current(mA, multiplier * 0.8);
 }
 
 bool Motor::init(CustomEEPROM &eeprom)
@@ -82,31 +82,43 @@ bool Motor::init(CustomEEPROM &eeprom)
         _pinsInitialized = true;
     }
 
-    _driver.begin();
-
-    int testConnection;
-    for (int i = 0; i < 5; i++)
+    if (MOTOR_DRIVER == "TMC220X")
     {
-        testConnection = _driver.test_connection();
-        if (testConnection == 0)
-            break;
+        _tmcDriver.begin();
+
+        int testConnection;
+        for (int i = 0; i < 5; i++)
+        {
+            testConnection = _tmcDriver.test_connection();
+            if (testConnection == 0)
+                break;
+        }
+
+        if (testConnection != 0)
+            return false;
+
+        _tmcDriver.pdn_disable(true); // enable UART
+        _applyMotorCurrent();
+        _tmcDriver.mstep_reg_select(true); // enable microstep selection over UART
+        _tmcDriver.I_scale_analog(false);  // disable Vref scaling
+        _applyStepMode();
+        _tmcDriver.blank_time(24);             // Comparator blank time. This time needs to safely cover the switching event and the duration of the ringing on the sense resistor. Choose a setting of 24 or 32 for typical applications. For higher capacitive loads, 3 may be required. Lower settings allow stealthChop to regulate down to lower coil current values.
+        _tmcDriver.toff(5);                    // enable stepper driver (For operation with stealthChop, this parameter is not used, but >0 is required to enable the motor)
+        _tmcDriver.intpol(true);               // use interpolation
+        _tmcDriver.TPOWERDOWN(255);            // time until current reduction after the motor stops. Use maximum (5.6s)
+        digitalWrite(TMC220X_PIN_ENABLE, LOW); // enable coils
+
+        _uartInitialized = true;
     }
-
-    if (testConnection != 0)
-        return false;
-
-    _driver.pdn_disable(true); // enable UART
-    _applyMotorCurrent();
-    _driver.mstep_reg_select(true); // enable microstep selection over UART
-    _driver.I_scale_analog(false);  // disable Vref scaling
-    _applyStepMode();
-    _driver.blank_time(24);                // Comparator blank time. This time needs to safely cover the switching event and the duration of the ringing on the sense resistor. Choose a setting of 24 or 32 for typical applications. For higher capacitive loads, 3 may be required. Lower settings allow stealthChop to regulate down to lower coil current values.
-    _driver.toff(5);                       // enable stepper driver (For operation with stealthChop, this parameter is not used, but >0 is required to enable the motor)
-    _driver.intpol(true);                  // use interpolation
-    _driver.TPOWERDOWN(255);               // time until current reduction after the motor stops. Use maximum (5.6s)
-    digitalWrite(TMC220X_PIN_ENABLE, LOW); // enable coils
-
-    _uartInitialized = true;
+    else if (MOTOR_DRIVER == "ULN2003")
+    {
+        /**
+         * accepted RPM range: 6RPM (may overheat) - 24RPM (may skip)
+         * ideal range: 10RPM (safe, high torque) - 22RPM (fast, low torque)
+         */
+        _ulnDriver.setRpm(10);
+        _uartInitialized = true;
+    }
 
     return true;
 }
@@ -137,19 +149,35 @@ bool Motor::handleMotor()
 
             if (_eeprom->getTargetPosition() < _eeprom->getPosition())
             {
-                digitalWrite(TMC220X_PIN_DIR, _eeprom->getReverseDirection() ? HIGH : LOW);
-                digitalWrite(TMC220X_PIN_STEP, HIGH);
-                delayMicroseconds(1);
-                digitalWrite(TMC220X_PIN_STEP, LOW);
+                if (MOTOR_DRIVER == "TMC220X")
+                {
+                    digitalWrite(TMC220X_PIN_DIR, _eeprom->getReverseDirection() ? HIGH : LOW);
+                    digitalWrite(TMC220X_PIN_STEP, HIGH);
+                    delayMicroseconds(1);
+                    digitalWrite(TMC220X_PIN_STEP, LOW);
+                }
+                else if (MOTOR_DRIVER == "ULN2003")
+                {
+                    _ulnDriver.stepCCW();
+                }
+
                 _eeprom->setPosition(_eeprom->getPosition() - 1);
                 delayMicroseconds(_motorMoveDelay);
             }
             else if (_eeprom->getTargetPosition() > _eeprom->getPosition())
             {
-                digitalWrite(TMC220X_PIN_DIR, _eeprom->getReverseDirection() ? LOW : HIGH);
-                digitalWrite(TMC220X_PIN_STEP, HIGH);
-                delayMicroseconds(1);
-                digitalWrite(TMC220X_PIN_STEP, LOW);
+                if (MOTOR_DRIVER == "TMC220X")
+                {
+                    digitalWrite(TMC220X_PIN_DIR, _eeprom->getReverseDirection() ? LOW : HIGH);
+                    digitalWrite(TMC220X_PIN_STEP, HIGH);
+                    delayMicroseconds(1);
+                    digitalWrite(TMC220X_PIN_STEP, LOW);
+                }
+                else if (MOTOR_DRIVER == "ULN2003")
+                {
+                    _ulnDriver.stepCW();
+                }
+
                 _eeprom->setPosition(_eeprom->getPosition() + 1);
                 delayMicroseconds(_motorMoveDelay);
             }
@@ -258,37 +286,4 @@ bool Motor::isMovingWithSettle()
             return false;
         }
     }
-}
-
-void Motor::debug()
-{
-    Serial.print("Motor full current (mA): ");
-    Serial.println(_motorI);
-    Serial.print("TMC DRV_STATUS: ");
-    Serial.println(_driver.DRV_STATUS());
-    Serial.print("TMC CRC error: ");
-    Serial.println(_driver.CRCerror);
-}
-
-void Motor::legacyTest()
-{
-    Serial.println("LEGACY MODE - START");
-    digitalWrite(TMC220X_PIN_ENABLE, LOW);
-    Serial.println("ENABLE LOW");
-
-    Serial.println("MOVING STARTED");
-    for (int i = 0; i < 500; i++)
-    {
-        digitalWrite(TMC220X_PIN_DIR, LOW);
-        digitalWrite(TMC220X_PIN_STEP, HIGH);
-        delayMicroseconds(1);
-        digitalWrite(TMC220X_PIN_STEP, LOW);
-        delayMicroseconds(8000);
-    }
-    Serial.println("MOVING FINISHED");
-
-    digitalWrite(TMC220X_PIN_ENABLE, HIGH);
-    Serial.println("ENABLE HIGH");
-
-    Serial.println("LEGACY MODE - END");
 }
