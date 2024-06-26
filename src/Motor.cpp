@@ -30,12 +30,7 @@ void Motor::_startMotor()
 
 void Motor::_stopMotor()
 {
-    if (_motorIsMoving && _eeprom->getSettleBufferMs() > 0)
-        _settleBufferPrevMs = millis();
     _lastMoveFinishedMs = millis();
-
-    _motorManualIsMoving = false;
-    _motorManualIsMovingContinuous = false;
     _motorIsMoving = false;
     _eeprom->setTargetPosition(_eeprom->getPosition());
 }
@@ -193,28 +188,6 @@ bool Motor::handleMotor()
     return _motorIsMoving;
 }
 
-void Motor::setMoveManual(bool motorManualIsMoving, bool motorManualIsMovingContinuous, bool motorManualIsMovingContinuousDir)
-{
-    _motorManualIsMoving = motorManualIsMoving;
-    _motorManualIsMovingContinuous = motorManualIsMovingContinuous;
-    _motorManualIsMovingContinuousDir = motorManualIsMovingContinuousDir;
-}
-
-bool Motor::getMotorManualIsMoving()
-{
-    return _motorManualIsMoving;
-}
-
-bool Motor::getMotorManualIsMovingContinuous()
-{
-    return _motorManualIsMovingContinuous;
-}
-
-bool Motor::getMotorManualIsMovingContinuousDir()
-{
-    return _motorManualIsMovingContinuousDir;
-}
-
 void Motor::startMotor()
 {
     _startMotor();
@@ -251,39 +224,4 @@ long Motor::getLastMoveFinishedMs()
 bool Motor::isMoving()
 {
     return _motorIsMoving;
-}
-
-bool Motor::isMovingWithSettle()
-{
-    if (_motorIsMoving)
-    {
-        return true;
-    }
-    else
-    {
-        /*
-            if your focuser has any play, this can affect the autofocuser performance. SGP for example goes aways from motorDir position and
-            than starts traversing back. When it changes focus direction (traverse back), focuser play can cause FOV to wiggle just a bit,
-            which causes enlongated stars on the next exposure. Settle buffer option returns IsMoving as TRUE after focuser reaches target position,
-            letting it to settle a bit. Advices by Jared Wellman of SGP.
-        */
-        if (_eeprom->getSettleBufferMs() > 0L && _settleBufferPrevMs != 0L)
-        {
-            long settleBufferCurrenMs = millis();
-            if ((settleBufferCurrenMs - _settleBufferPrevMs) < (unsigned long)_eeprom->getSettleBufferMs())
-            {
-                return true;
-            }
-            else
-            {
-                _settleBufferPrevMs = 0L;
-
-                return true;
-            }
-        }
-        else
-        {
-            return false;
-        }
-    }
 }

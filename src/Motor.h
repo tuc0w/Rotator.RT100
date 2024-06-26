@@ -29,10 +29,6 @@ private:
     bool _uartInitialized = false;
     long _motorI;
     bool _motorIsMoving;
-    bool _motorManualIsMoving;
-    bool _motorManualIsMovingContinuous;
-    bool _motorManualIsMovingContinuousDir;
-    unsigned long _settleBufferPrevMs;
     unsigned long _debouncingLastRunMs = 0L;
     unsigned long _lastMoveFinishedMs = 0L;
     long _motorMoveDelay;
@@ -48,10 +44,6 @@ public:
     bool init(CustomEEPROM &eeprom);
     bool isUartInitialized();
     bool handleMotor();
-    void setMoveManual(bool motorManualIsMoving, bool motorManualIsMovingContinuous, bool motorManualIsMovingContinuousDir);
-    bool getMotorManualIsMoving();
-    bool getMotorManualIsMovingContinuous();
-    bool getMotorManualIsMovingContinuousDir();
     void startMotor();
     void stopMotor();
     void applyStepMode();
@@ -59,7 +51,4 @@ public:
     void applyMotorCurrent();
     long getLastMoveFinishedMs();
     bool isMoving();
-    bool isMovingWithSettle();
-    void debug();
-    void legacyTest();
 };
