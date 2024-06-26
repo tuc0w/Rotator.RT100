@@ -15,9 +15,23 @@
 #define ULN2003_PIN_IN2 9
 #define ULN2003_PIN_IN3 10
 #define ULN2003_PIN_IN4 11
-#define ULN2003_STEPS_PER_REVOLUTION 4096
 
-#define MOTOR_DRIVER "ULN2003"
+/**
+ * You can change ULN2003_STEPS_PER_REVOLUTION if you think your motor
+ * is geared 63.68395:1 (measured) rather than 64:1 (default)
+ * which would make the total steps 4076 (rather than default 4096)
+ * for more info see: http://forum.arduino.cc/index.php?topic=71964.15
+ */
+#define ULN2003_STEPS_PER_REVOLUTION_DEFAULT 4096
+#define ULN2003_STEPS_PER_REVOLUTION_MEASURED 4076
+#define ULN2003_STEPS_PER_REVOLUTION ULN2003_STEPS_PER_REVOLUTION_DEFAULT
+
+/**
+ * Motor driver types:
+ * - TMC220X
+ * - ULN2003
+ */
+const String MOTOR_DRIVER = "ULN2003";
 
 #define MOTOR_I 500
 

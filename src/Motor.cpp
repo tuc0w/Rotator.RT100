@@ -112,6 +112,8 @@ bool Motor::init(CustomEEPROM &eeprom)
          * ideal range: 10RPM (safe, high torque) - 22RPM (fast, low torque)
          */
         _ulnDriver.setRpm(10);
+        _ulnDriver.setTotalSteps(ULN2003_STEPS_PER_REVOLUTION);
+
         _uartInitialized = true;
     }
 
@@ -130,18 +132,6 @@ bool Motor::handleMotor()
         // give priority to motor with dedicated 50ms loops (effectivly pausing main loop, including serial event processing)
         while (millis() - _debouncingLastRunMs < 50)
         {
-            if (_motorManualIsMovingContinuous)
-            {
-                if (_motorManualIsMovingContinuousDir)
-                {
-                    _eeprom->setTargetPosition(_eeprom->getPosition() + 1);
-                }
-                else
-                {
-                    _eeprom->setTargetPosition(_eeprom->getPosition() - 1);
-                }
-            }
-
             if (_eeprom->getTargetPosition() < _eeprom->getPosition())
             {
                 if (MOTOR_DRIVER == "TMC220X")
