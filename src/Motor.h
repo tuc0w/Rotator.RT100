@@ -17,6 +17,12 @@
 #define ULN2003_PIN_IN4 11
 
 /**
+ * accepted RPM range: 6RPM (may overheat) - 24RPM (may skip)
+ * ideal range: 10RPM (safe, high torque) - 22RPM (fast, low torque)
+ */
+#define ULN2003_MOTOR_RPM 10
+
+/**
  * You can change ULN2003_STEPS_PER_REVOLUTION if you think your motor
  * is geared 63.68395:1 (measured) rather than 64:1 (default)
  * which would make the total steps 4076 (rather than default 4096)

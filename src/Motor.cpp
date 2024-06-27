@@ -107,11 +107,7 @@ bool Motor::init(CustomEEPROM &eeprom)
     }
     else if (MOTOR_DRIVER == "ULN2003")
     {
-        /**
-         * accepted RPM range: 6RPM (may overheat) - 24RPM (may skip)
-         * ideal range: 10RPM (safe, high torque) - 22RPM (fast, low torque)
-         */
-        _ulnDriver.setRpm(10);
+        _ulnDriver.setRpm(ULN2003_MOTOR_RPM);
         _ulnDriver.setTotalSteps(ULN2003_STEPS_PER_REVOLUTION);
 
         _uartInitialized = true;
