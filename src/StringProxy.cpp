@@ -1,3 +1,4 @@
+#include "Motor.h"
 #include "StringProxy.h"
 
 void StringProxy::init(CustomEEPROM &eeprom, Motor &motor)
@@ -8,9 +9,18 @@ void StringProxy::init(CustomEEPROM &eeprom, Motor &motor)
 
 float StringProxy::getStepsPerDeg()
 {
-    double stepsPerDeg = 400.0f * _eeprom->getStepMode(); // steps per 360 of motor shaft
-    stepsPerDeg *= (100.0f / 20.0f);                      // steps per 360 deg of rotator
-    stepsPerDeg /= 360.0f;                                // steps per deg
+    double stepsPerDeg = 0.0f;
+    if (MOTOR_DRIVER == "TMC220X")
+    {
+        stepsPerDeg = 400.0f * _eeprom->getStepMode(); // steps per 360 of motor shaft
+    }
+    else if (MOTOR_DRIVER == "ULN2003")
+    {
+        stepsPerDeg = ULN2003_STEPS_PER_REVOLUTION; // steps per 360 of motor shaft
+    }
+
+    stepsPerDeg *= (100.0f / 20.0f); // steps per 360 deg of rotator
+    stepsPerDeg /= 360.0f;           // steps per deg
 
     return stepsPerDeg;
 }
